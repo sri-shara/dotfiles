@@ -1,0 +1,161 @@
+#!/bin/bash
+
+# Initialize variables
+jira_id=""
+branch=""
+path=""
+
+# Function to validate and format JIRA ID
+validate_jira_id() {
+  local jid="$1"
+  # Convert to uppercase using awk (more portable)
+  jid=$(echo "$jid" | awk '{print toupper($0)}')
+
+  # Validate format: LETTERS-NUMBERS
+  if [[ $jid =~ ^[A-Z]+-[0-9]+$ ]]; then
+    echo "$jid"
+    return 0
+  else
+    echo "Error: Invalid JIRA ID format. Expected format: PROJ-123" >&2
+    return 1
+  fi
+}
+
+# Bootstrap Claude Code Python environment if the repo declares one.
+# Convention: .claude/pyproject.toml defines a shared venv for hooks and skills.
+bootstrap_claude_env() {
+  local manifest=".claude/pyproject.toml"
+
+  if [[ ! -f "$manifest" ]]; then
+    return 0
+  fi
+
+  if ! command -v uv &> /dev/null; then
+    echo "Warning: 'uv' not found. Skipping Claude env bootstrap." >&2
+    return 0
+  fi
+
+  echo "Bootstrapping Claude Code environment..."
+  ( cd .claude && uv sync --quiet ) || echo "  Error: uv sync failed in .claude/" >&2
+}
+
+# Parse command line options
+while getopts "j:h" opt; do
+  case $opt in
+    j)
+      jira_id=$(validate_jira_id "$OPTARG")
+      if [ $? -ne 0 ]; then
+        exit 1
+      fi
+      ;;
+    h)
+      echo "Usage: create-worktree [-j JIRA-ID] <branch-name> [path]"
+      echo "  -j JIRA-ID    Prepend JIRA ID to branch name (e.g., PROJ-123)"
+      echo ""
+      echo "Examples:"
+      echo "  create-worktree feature/new-feature"
+      echo "  create-worktree -j PROJ-123 implement-auth"
+      echo "  create-worktree -j proj-123 fix-bug ../custom-path"
+      exit 0
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+  esac
+done
+
+# Shift past the options
+shift $((OPTIND-1))
+
+# Check if branch name was provided
+if [ $# -lt 1 ]; then
+  echo "Usage: create-worktree [-j JIRA-ID] <branch-name> [path]"
+  echo "Example: create-worktree feature/new-feature"
+  echo "Example: create-worktree -j PROJ-123 implement-auth"
+  exit 1
+fi
+
+branch_name="$1"
+
+# Check if branch already starts with JIRA pattern
+if [[ $branch_name =~ ^[A-Z]+-[0-9]+/ ]]; then
+  # Branch already has JIRA prefix
+  if [ -n "$jira_id" ]; then
+    echo "Warning: Branch already has JIRA prefix. Using existing prefix from branch name."
+  fi
+  branch="$branch_name"
+else
+  # Apply JIRA prefix if provided
+  if [ -n "$jira_id" ]; then
+    branch="${jira_id}/${branch_name}"
+  else
+    branch="$branch_name"
+  fi
+fi
+main_worktree=$(git worktree list | head -1 | awk '{print $1}')
+repo_name=$(basename "$main_worktree")
+# Replace slashes with hyphens in the branch name for the directory path
+branch_path_name="${branch//\//-}"
+default_path="../${repo_name}-${branch_path_name}"
+path=${2:-$default_path}
+
+# Fetch the branch from remote to ensure we have the latest refs
+git fetch origin "$branch" 2>/dev/null || true
+
+# Check if branch exists on remote first, then locally
+if git show-ref --verify --quiet refs/remotes/origin/$branch; then
+  if ! git show-ref --verify --quiet refs/heads/$branch; then
+    echo "Branch '$branch' exists on remote. Creating tracking branch..."
+    git branch --track $branch origin/$branch
+  fi
+elif ! git show-ref --verify --quiet refs/heads/$branch; then
+  # Branch doesn't exist locally or remotely, create new
+  echo "Branch '$branch' does not exist. Creating it..."
+  git branch $branch
+fi
+
+# Create the worktree
+echo "Creating worktree for branch '$branch' at '$path'..."
+git worktree add "$path" "$branch"
+
+# Navigate to the worktree
+cd "$path" || exit 1
+
+# Copy .env file from main worktree if it exists
+if [ -f "$main_worktree/.env" ]; then
+  echo "Copying .env file from main worktree"
+  cp "$main_worktree/.env" .env
+fi
+
+# Copy .env folder from main worktree if it exists
+if [ -d "$main_worktree/.env" ]; then
+  echo "Copying .env folder from main worktree"
+  cp -r "$main_worktree/.env" .env
+fi
+
+# Warn if neither exists
+if [ ! -f "$main_worktree/.env" ] && [ ! -d "$main_worktree/.env" ]; then
+  echo "Warning: No .env file or folder found in main worktree ($main_worktree)"
+fi
+
+# Set up .envrc for direnv (auto-loads .env when entering directory)
+if command -v direnv &> /dev/null; then
+  echo "Creating .envrc for direnv..."
+  echo "dotenv" > .envrc
+  direnv allow
+else
+  echo "Tip: Install direnv (brew install direnv) for automatic .env loading"
+fi
+
+# Run repo-specific hook if one exists
+hook="$HOME/dotfiles/worktree-hooks/${repo_name}.sh"
+if [ -f "$hook" ]; then
+  echo "Running hook for $repo_name..."
+  bash "$hook" "$main_worktree" "$PWD"
+fi
+
+# Bootstrap Claude Code environment if present
+bootstrap_claude_env
+
+echo "Worktree created at $path with environment and credential files linked."

@@ -1,0 +1,39 @@
+# Ghostty Terminal Configuration
+
+# Font
+font-family = "JetBrainsMono Nerd Font"
+font-size = 16
+font-thicken = false
+adjust-cell-height = 10%
+
+# Theme
+theme = "Gruvbox Material Dark"
+# Previous: Gruvbox Dark Hard, TokyoNight
+
+# Shell Integration (the game-changer)
+shell-integration = "detect"
+shell-integration-features = no-cursor
+
+# Clipboard
+copy-on-select = clipboard
+clipboard-paste-protection = true
+
+# Window
+window-padding-x = 50
+window-padding-y = 50
+
+# Tabs
+# macOS: Integrate tabs into titlebar (shows tabs with names in titlebar)
+macos-titlebar-style = tabs
+# Alternative: Use separate tab bar (uncomment below and comment out macos-titlebar-style)
+# window-show-tab-bar = always
+# Tab renaming: Press Cmd+I (or right-click window → "Set Title")
+# Note: Tab bar at bottom is not currently available on macOS builds.
+#       macOS builds use native UI and don't support GTK CSS customization.
+
+# Cursor
+cursor-style = "block"
+cursor-style-blink = false
+
+# Keybinds
+keybind = shift+enter=text:\x1b\r
