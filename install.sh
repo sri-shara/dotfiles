@@ -40,6 +40,11 @@ mkdir -p "$HOME/.config"
 ln -sf "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
 echo "  starship/starship.toml -> ~/.config/starship.toml"
 
+# Claude Code user settings (hooks, plugins, effort level)
+mkdir -p "$HOME/.claude"
+ln -sf "$DOTFILES/claude/settings.json" "$HOME/.claude/settings.json"
+echo "  claude/settings.json -> ~/.claude/settings.json"
+
 # --- Scripts ---
 chmod +x "$DOTFILES/bin/"*
 echo ""

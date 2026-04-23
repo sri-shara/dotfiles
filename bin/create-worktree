@@ -158,4 +158,10 @@ fi
 # Bootstrap Claude Code environment if present
 bootstrap_claude_env
 
+# Open the new worktree in Cursor (non-blocking, skip silently if cursor not installed)
+if command -v cursor &> /dev/null; then
+  echo "Opening worktree in Cursor..."
+  cursor "$PWD" &> /dev/null &
+fi
+
 echo "Worktree created at $path with environment and credential files linked."

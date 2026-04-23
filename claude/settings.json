@@ -1,0 +1,34 @@
+{
+  "enabledPlugins": {
+    "codex@openai-codex": true,
+    "andrej-karpathy-skills@karpathy-skills": true
+  },
+  "extraKnownMarketplaces": {
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    },
+    "karpathy-skills": {
+      "source": {
+        "source": "github",
+        "repo": "forrestchang/andrej-karpathy-skills"
+      }
+    }
+  },
+  "effortLevel": "high",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "EnterWorktree",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Use `create-worktree <branch>` via Bash instead — it copies .env files, runs the per-repo hook at ~/dotfiles/worktree-hooks/<repo>.sh, and sets up direnv. The built-in EnterWorktree tool skips all of that.\"}}\\n'"
+          }
+        ]
+      }
+    ]
+  }
+}
