@@ -12,7 +12,9 @@ theme = "Gruvbox Material Dark"
 
 # Shell Integration (the game-changer)
 shell-integration = "detect"
-shell-integration-features = no-cursor
+# no-title: stop the shell from overwriting tab titles on every prompt,
+#           so manual renames (Cmd+I) persist.
+shell-integration-features = no-cursor,no-title
 
 # Clipboard
 copy-on-select = clipboard
@@ -25,11 +27,16 @@ window-padding-y = 50
 # Tabs
 # macOS: Integrate tabs into titlebar (shows tabs with names in titlebar)
 macos-titlebar-style = tabs
+# Tab renaming:
+#   - Cmd+I               -> prompt to rename current tab (prompt_tab_title)
+#   - Right-click tab     -> "Rename Tab…"
+#   - Names persist because shell-integration-features includes `no-title`.
+# Tab color note: the native titlebar tabs only support a colored-dot indicator,
+# not a full-tab background color — this is an AppKit limit, not a config gap.
+# Tracked upstream at https://github.com/ghostty-org/ghostty/discussions/10152.
+# Workaround: prefix the tab name with an emoji via Cmd+I (e.g. "🔴 tenant DB").
 # Alternative: Use separate tab bar (uncomment below and comment out macos-titlebar-style)
 # window-show-tab-bar = always
-# Tab renaming: Press Cmd+I (or right-click window → "Set Title")
-# Note: Tab bar at bottom is not currently available on macOS builds.
-#       macOS builds use native UI and don't support GTK CSS customization.
 
 # Cursor
 cursor-style = "block"
