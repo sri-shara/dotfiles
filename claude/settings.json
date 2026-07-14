@@ -1,4 +1,21 @@
 {
+  "permissions": {
+    "defaultMode": "auto"
+  },
+  "model": "claude-fable-5[1m]",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "EnterWorktree",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Use `create-worktree <branch>` via Bash instead — it copies .env files, runs the per-repo hook at ~/dotfiles/worktree-hooks/<repo>.sh, and sets up direnv. The built-in EnterWorktree tool skips all of that.\"}}\\n'"
+          }
+        ]
+      }
+    ]
+  },
   "enabledPlugins": {
     "codex@openai-codex": true,
     "andrej-karpathy-skills@karpathy-skills": true
@@ -18,17 +35,7 @@
     }
   },
   "effortLevel": "high",
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "EnterWorktree",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Use `create-worktree <branch>` via Bash instead — it copies .env files, runs the per-repo hook at ~/dotfiles/worktree-hooks/<repo>.sh, and sets up direnv. The built-in EnterWorktree tool skips all of that.\"}}\\n'"
-          }
-        ]
-      }
-    ]
-  }
+  "theme": "dark",
+  "skipAutoPermissionPrompt": true,
+  "skipWorkflowUsageWarning": true
 }
