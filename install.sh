@@ -45,6 +45,15 @@ mkdir -p "$HOME/.claude"
 ln -sf "$DOTFILES/claude/settings.json" "$HOME/.claude/settings.json"
 echo "  claude/settings.json -> ~/.claude/settings.json"
 
+# Claude Code user-scope skills (available in every repo)
+mkdir -p "$HOME/.claude/skills"
+for skill in "$DOTFILES/claude/skills"/*/; do
+  [ -d "$skill" ] || continue
+  name="$(basename "$skill")"
+  ln -sfn "${skill%/}" "$HOME/.claude/skills/$name"
+  echo "  claude/skills/$name -> ~/.claude/skills/$name"
+done
+
 # --- Scripts ---
 chmod +x "$DOTFILES/bin/"*
 echo ""
