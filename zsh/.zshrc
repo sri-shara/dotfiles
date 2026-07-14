@@ -21,4 +21,16 @@ fi
 # Machine-specific overrides (not in version control)
 [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
 export PATH="/Users/sri/Library/Python/3.13/bin:$PATH"
-export PATH="/path/where/claude/lives:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+
+# Homebrew
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Go-installed tools (Task runner)
+export PATH="$PATH:$HOME/go/bin"
+
+# mise (tool version manager)
+eval "$(mise activate zsh)"
+
+# task shell completion
+command -v task >/dev/null 2>&1 && eval "$(task --completion zsh)"
