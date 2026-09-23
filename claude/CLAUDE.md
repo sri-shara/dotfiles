@@ -33,8 +33,15 @@
 
 ## Planning & implementing (coding tasks)
 - Plan first: restate acceptance criteria + list files you'll change and why.
-  Wait for my approval before coding.
-- Match existing conventions; don't over-engineer. Comments explain WHY, briefly.
+  Wait for my explicit approval of the whole plan before writing any code.
+  No partial starts.
+- For backend/RPC changes, structure plans and PR descriptions along the
+  request flow: Service Definition → Service Impl → (Datastore, if touched)
+  → Query. Walk each layer in that order.
+- Match existing conventions; don't over-engineer.
+- Code comments: keep them lean. RPC, function, and variable names should
+  be self-explanatory and tell most of the story. Add comments where the WHY
+  isn't obvious: one line usually, multi-line only when really needed.
 - Ask before deciding anything touching DB schema, external API contracts, or
   user-facing behavior — or where the issue contradicts the code.
 - Implement → verify → commit. One logical change per commit; never clump
@@ -45,6 +52,8 @@
 - Commit messages: imperative summary line explaining the change. Body only
   when there's non-obvious WHY/context (not a restatement of the diff),
   ~72-col wrap. No AI-attribution footer.
+- PR descriptions: concise, only what changed (ordered by the request flow
+  for backend changes). No filler, no line-by-line restatement of the diff.
 - After raising a PR, drive only the **Greptile** review to clean — leave human
   reviewer comments for me to handle. Prefer `/greploop`: it waits for
   Greptile's check run to finish and loops automatically. Manually: wait for
